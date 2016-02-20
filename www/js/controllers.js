@@ -1,6 +1,38 @@
 angular.module('starter.controllers', [])
 
-.controller('DashCtrl', function($scope) {})
+.controller('DashCtrl', function($scope, $cordovaDeviceMotion, $ionicPlatform, Accelerometer) {
+  var canvas;
+
+  $scope.accelerometer = Accelerometer;
+
+  // Current measurements
+  $scope.measurements = {
+      x : null,
+      y : null,
+      z : null,
+      timestamp : null
+  };
+
+  $ionicPlatform.ready(function() {
+    canvas=document.getElementById('myCanvas'); 
+    Accelerometer.setCanvas(canvas);
+  });
+
+  //Start Watching method
+  $scope.startWatching = function() {     
+    Accelerometer.startWatching();
+  };  
+
+  // Stop watching method
+  $scope.stopWatching = function() {  
+    Accelerometer.stopWatching();
+  };
+
+  // For testing
+  $scope.$watch('accelerometer.getMeasurements()', function(newMeasurements) {
+    $scope.measurements = newMeasurements;
+  });
+})
 
 .controller('ChatsCtrl', function($scope, Chats) {
   // With the new view caching in Ionic, Controllers are only called
