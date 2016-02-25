@@ -7,7 +7,7 @@ angular.module('starter.services-accelerometer', [])
 
   // watch Acceleration options
   var options = { 
-      frequency: 1000, // Measure every 100ms
+      frequency: 100, // Measure every 100ms
       deviation : 25  // We'll use deviation to determine the shake event, best values in the range between 25 and 30
   };
    

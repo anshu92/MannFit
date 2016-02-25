@@ -1,7 +1,12 @@
 angular.module('starter.controllers', [])
 
-.controller('DashCtrl', function($scope, $cordovaDeviceMotion, $ionicPlatform, Accelerometer) {
-  var canvas;
+.controller('DashCtrl', function($scope, $cordovaDeviceMotion, $ionicPlatform, $interval, $timeout, Accelerometer) {
+  var canvas, timeout;
+
+  $scope.count;
+
+  // Timer function
+  $scope.timer = null;
 
   $scope.accelerometer = Accelerometer;
 
@@ -16,11 +21,21 @@ angular.module('starter.controllers', [])
   $ionicPlatform.ready(function() {
     canvas=document.getElementById('myCanvas'); 
     Accelerometer.setCanvas(canvas);
+
+    // Initialize variables
+    timeout = 5000; // 5 second count down
+    $scope.count = 0;
   });
 
   //Start Watching method
   $scope.startWatching = function() {     
     Accelerometer.startWatching();
+
+    // Reset timer
+    $scope.count = timeout/1000;
+
+    // Initiate count down timer
+    startTimer(timeout);
   };  
 
   // Stop watching method
@@ -32,6 +47,37 @@ angular.module('starter.controllers', [])
   $scope.$watch('accelerometer.getMeasurements()', function(newMeasurements) {
     $scope.measurements = newMeasurements;
   });
+
+  $scope.measurementRound = function(measurement) {
+    return precise_round(measurement, 5);
+  }
+
+  // Put in accelerometer service
+  function precise_round(num, decimals) {
+    var t=Math.pow(10, decimals);   
+    return (Math.round((num * t) + (decimals>0?1:0)*(Math.sign(num) * (10 / Math.pow(100, decimals)))) / t).toFixed(decimals);
+  }
+
+
+  // Perform count down, and stop measure once count down reached
+  function startTimer(timeout) {
+    // Start counting down
+    $scope.timer = $interval(function() { 
+      $scope.count--;
+    }, 1000);
+
+    // Stop watching after timeout interval
+    $timeout(function(){ 
+      $scope.stopWatching(); 
+      stopCountDown();
+    }, timeout);
+  }
+
+  function stopCountDown() {
+    if(angular.isDefined($scope.timer)) {
+      $interval.cancel($scope.timer);
+    }
+  }
 })
 
 .controller('ChatsCtrl', function($scope, Chats) {
