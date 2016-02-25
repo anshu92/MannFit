@@ -6,17 +6,22 @@
         <input type="text" placeholder="0" ng-model="options.frequency">
       </label>
     </div>
+
+    <h2>Radius: {{measurementRound(radius)}}</h2>
+    <h2>Count: {{count}}</h2>
+    <h2>X: {{measurementRound(currentXWithRespectToOrigin)}}</h2>
+    <h2>Y: {{measurementRound(currentYWithRespectToOrigin)}}</h2>
+
+    <canvas id="myCanvas" width="300" height="150" style="border:1px solid #d3d3d3;">
+    </canvas>
+
     <button class="button button-full button-positive" ng-click="startWatching()">
       Start Measurement
     </button>
     <button class="button button-full button-positive" ng-click="stopWatching()">
       Stop Measurement
     </button>
-    <h2>X: {{measurementRound(measurements.x)}}</h2>
-    <h2>Y: {{measurementRound(measurements.y)}}</h2>
-    <h2>Z: {{measurementRound(measurements.z)}}</h2>
-    <h2>Radius: {{radius}}</h2>
-    <h2>Count: {{count}}</h2>
-    <canvas id="myCanvas" width="300" height="150" style="border:1px solid #d3d3d3;">
+
+
   </ion-content>
 </ion-view>

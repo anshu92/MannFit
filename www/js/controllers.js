@@ -1,9 +1,15 @@
 angular.module('starter.controllers', [])
 
 .controller('DashCtrl', function($scope, $cordovaDeviceMotion, $ionicPlatform, $interval, $timeout, Accelerometer) {
-  var canvas, timeout;
+  var canvas
+  var timeout = 100000; // 5 second timer
 
   $scope.count;
+
+  $scope.radius;
+
+  $scope.currentXWithRespectToOrigin;
+  $scope.currentYWithRespectToOrigin;
 
   // Timer function
   $scope.timer = null;
@@ -23,7 +29,6 @@ angular.module('starter.controllers', [])
     Accelerometer.setCanvas(canvas);
 
     // Initialize variables
-    timeout = 5000; // 5 second count down
     $scope.count = 0;
   });
 
@@ -32,7 +37,9 @@ angular.module('starter.controllers', [])
     Accelerometer.startWatching();
 
     // Reset timer
-    $scope.count = timeout/1000;
+    if($scope.count < 1) {
+      $scope.count = timeout/1000;
+    }
 
     // Initiate count down timer
     startTimer(timeout);
@@ -41,11 +48,21 @@ angular.module('starter.controllers', [])
   // Stop watching method
   $scope.stopWatching = function() {  
     Accelerometer.stopWatching();
+    stopCountDown();
   };
 
   // For testing
   $scope.$watch('accelerometer.getMeasurements()', function(newMeasurements) {
     $scope.measurements = newMeasurements;
+  });
+  $scope.$watch('accelerometer.getRadius()', function(newRadius) {
+    $scope.radius = newRadius;
+  });
+  $scope.$watch('accelerometer.getCurrentXWithRespectToOrigin()', function(newX) {
+    $scope.currentXWithRespectToOrigin = newX;
+  });
+  $scope.$watch('accelerometer.getCurrentYWithRespectToOrigin()', function(newY) {
+    $scope.currentYWithRespectToOrigin = newY;
   });
 
   $scope.measurementRound = function(measurement) {
@@ -57,7 +74,6 @@ angular.module('starter.controllers', [])
     var t=Math.pow(10, decimals);   
     return (Math.round((num * t) + (decimals>0?1:0)*(Math.sign(num) * (10 / Math.pow(100, decimals)))) / t).toFixed(decimals);
   }
-
 
   // Perform count down, and stop measure once count down reached
   function startTimer(timeout) {
@@ -80,6 +96,10 @@ angular.module('starter.controllers', [])
   }
 })
 
+
+
+
+
 .controller('ChatsCtrl', function($scope, Chats) {
   // With the new view caching in Ionic, Controllers are only called
   // when they are recreated or on app start, instead of every page change.
@@ -94,6 +114,10 @@ angular.module('starter.controllers', [])
     Chats.remove(chat);
   };
 })
+
+
+
+
 
 .controller('ChatDetailCtrl', function($scope, $stateParams, Chats) {
   $scope.chat = Chats.get($stateParams.chatId);

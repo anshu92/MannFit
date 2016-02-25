@@ -7,11 +7,16 @@ angular.module('starter.services-accelerometer', [])
 
   // watch Acceleration options
   var options = { 
-      frequency: 100, // Measure every 100ms
-      deviation : 25  // We'll use deviation to determine the shake event, best values in the range between 25 and 30
+      frequency: 20, // Measure every 100ms
+      deviation : 25,  // We'll use deviation to determine the shake event, best values in the range between 25 and 30
+      xOrigin: 150,
+      yOrigin: 75
   };
    
   var radius = null;
+
+  var currentXWithRespectToOrigin = null;
+  var currentYWithRespectToOrigin = null;
 
   // Current measurements
   var measurements = {
@@ -23,8 +28,8 @@ angular.module('starter.services-accelerometer', [])
    
   // Previous measurements    
   var previousMeasurements = {
-      x : 150,
-      y : 75,
+      x : options.xOrigin,
+      y : options.yOrigin,
       z : null,
       timestamp : null
   };
@@ -55,17 +60,20 @@ angular.module('starter.services-accelerometer', [])
         // Calculate new coordinates        
         var currentX = previousMeasurements.x + (-1)*result.x;
         var currentY = previousMeasurements.y + result.y;
+        var currentZ = previousMeasurements.z + result.z;
+
+        currentXWithRespectToOrigin = currentX - options.xOrigin;
+        currentYWithRespectToOrigin = currentY - options.yOrigin;
 
         drawCircle(currentX, currentY);   
+        radius = Math.sqrt(currentXWithRespectToOrigin*currentXWithRespectToOrigin
+         + currentYWithRespectToOrigin+currentYWithRespectToOrigin);  
 
         // Set previous data  
         previousMeasurements.x = currentX;
         previousMeasurements.y = currentY;
-        previousMeasurements.z = result.z;
-        previousMeasurements.timestamp = result.timestamp; 
-
-        // Calculate radius using Pythagorean
-        radius = Math.sqrt(result.x*result.x + result.y*result.y);           
+        previousMeasurements.z = currentZ;
+        previousMeasurements.timestamp = result.timestamp;          
     });     
   };  
 
@@ -77,6 +85,17 @@ angular.module('starter.services-accelerometer', [])
   this.getMeasurements = function() {
   	return measurements;
   }
+
+  this.getRadius = function() {
+  	return radius;
+  }
+  this.getCurrentXWithRespectToOrigin = function() {
+  	return currentXWithRespectToOrigin;
+  }
+  this.getCurrentYWithRespectToOrigin = function() {
+  	return currentYWithRespectToOrigin;
+  }
+
 
   function drawCircle(x, y) {
     ctx.beginPath();
