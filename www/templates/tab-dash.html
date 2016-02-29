@@ -1,27 +1,36 @@
-<ion-view view-title="Dashboard">
+<ion-view view-title="Workout">
   <ion-content class="padding">
     <div class="list">
       <label class="item item-input">
-        <span class="input-label">Frequency</span>
-        <input type="text" placeholder="0" ng-model="options.frequency">
+        <span class="input-label">Absement(ms*R)</span>
+        <input type="text" placeholder="0" ng-model="absement">
+      </label>
+      <label class="item item-input">
+        <span class="input-label">Radius</span>
+        <input type="text" placeholder="0" ng-model="radius">
+      </label>
+      <label class="item item-input">
+        <span class="input-label">Time Remaining</span>
+        <input type="text" placeholder="0" ng-model="count">
       </label>
     </div>
+    <div style="margin-left: auto; margin-right: auto;width:300px;">
+          <canvas id="myCanvas" width="300" height="300">
 
-    <h2>Radius: {{measurementRound(radius)}}</h2>
-    <h2>Count: {{count}}</h2>
-    <h2>X: {{measurementRound(currentXWithRespectToOrigin)}}</h2>
-    <h2>Y: {{measurementRound(currentYWithRespectToOrigin)}}</h2>
-
-    <canvas id="myCanvas" width="300" height="150" style="border:1px solid #d3d3d3;">
+    </div>
     </canvas>
 
+    <!-- <h2>X: {{measurementRound(currentXWithRespectToOrigin)}}</h2>
+    <h2>Y: {{measurementRound(currentYWithRespectToOrigin)}}</h2>
+ -->
+
     <button class="button button-full button-positive" ng-click="startWatching()">
-      Start Measurement
+      Start
     </button>
-    <button class="button button-full button-positive" ng-click="stopWatching()">
+    <!-- <button class="button button-full button-positive" ng-click="stopWatching()">
       Stop Measurement
     </button>
-
+ -->
 
   </ion-content>
 </ion-view>

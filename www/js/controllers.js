@@ -1,12 +1,14 @@
 angular.module('starter.controllers', [])
 
-.controller('DashCtrl', function($scope, $cordovaDeviceMotion, $ionicPlatform, $interval, $timeout, Accelerometer) {
+.controller('DashCtrl', function($scope, $cordovaDeviceMotion, $ionicPlatform, $interval, $timeout, Accelerometer, Chats) {
   var canvas
-  var timeout = 100000; // 5 second timer
+  var timeout = 5000; // 5 second timer
 
   $scope.count;
 
   $scope.radius;
+
+  $scope.absement; 
 
   $scope.currentXWithRespectToOrigin;
   $scope.currentYWithRespectToOrigin;
@@ -27,6 +29,8 @@ angular.module('starter.controllers', [])
   $ionicPlatform.ready(function() {
     canvas=document.getElementById('myCanvas'); 
     Accelerometer.setCanvas(canvas);
+
+    //Draw circle radar
 
     // Initialize variables
     $scope.count = 0;
@@ -49,6 +53,18 @@ angular.module('starter.controllers', [])
   $scope.stopWatching = function() {  
     Accelerometer.stopWatching();
     stopCountDown();
+    console.log(Accelerometer.getRadiusArray());
+    $scope.absement = $scope.accelerometer.getAbsement();
+
+    var score = {
+      id: Chats.getLastId(),
+      name: 'Pushup',
+      lastText: 'Score: ' + $scope.absement,
+      face: ' '
+    }
+    Chats.add(score);
+
+    console.log(Chats.all());
   };
 
   // For testing
