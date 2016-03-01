@@ -1,19 +1,22 @@
 <ion-view view-title="Workout">
-  <ion-content class="padding">
-    <div class="list">
-      <label class="item item-input">
-        <span class="input-label">Absement(ms*R)</span>
-        <input type="text" placeholder="0" ng-model="absement">
-      </label>
-      <label class="item item-input">
-        <span class="input-label">Radius</span>
-        <input type="text" placeholder="0" ng-model="radius">
-      </label>
-      <label class="item item-input">
-        <span class="input-label">Time Remaining</span>
-        <input type="text" placeholder="0" ng-model="count">
-      </label>
+  <ion-content class="padding" overflow-scroll="true">
+    <div class="row">
+        <div class="col-33 item item-input">
+          <span class="input-label" style="font-size: 10px; padding: 0px 10px 0px 0px;">Score: </span>
+          <p ng-bind="absement" style="font-size: 10px;"></p>
+        </div>
+        <div class="col-33 item item-input">
+          <span class="input-label"style="font-size: 10px; padding: 0px 10px 0px 0px;" >Radius: </span>
+          <p ng-bind="radius" style="font-size: 10px;"></p>
+        </div>
+        <div class="col-33 item item-input">
+          <span class="input-label"style="font-size: 10px; padding: 0px 10px 0px 0px;" >Time: </span>
+          <p ng-bind="count" style="font-size: 10px;">
+        </div>
     </div>
+    
+
+
     <div style="margin-left: auto; margin-right: auto;width:300px;">
           <canvas id="myCanvas" width="300" height="300">
 
@@ -24,9 +27,13 @@
     <h2>Y: {{measurementRound(currentYWithRespectToOrigin)}}</h2>
  -->
 
-    <button class="button button-full button-positive" ng-click="startWatching()">
+    <button class="button button-full button-positive" ng-click="startWatching(countDown)">
       Start
     </button>
+    <label class="item item-input">
+          <span class="input-label">Set Count Down</span>
+          <input type="number" placeholder="5" ng-model="countDown">
+    </label>
     <!-- <button class="button button-full button-positive" ng-click="stopWatching()">
       Stop Measurement
     </button>

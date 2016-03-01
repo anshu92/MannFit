@@ -1,11 +1,15 @@
 angular.module('starter.controllers', [])
 
-.controller('DashCtrl', function($scope, $cordovaDeviceMotion, $ionicPlatform, $interval, $timeout, Accelerometer, Chats) {
+.controller('DashCtrl', function($scope, $cordovaDeviceMotion, $ionicPlatform, $interval, $timeout, Accelerometer, Chats, $cordovaNativeAudio) {
   var canvas
-  var timeout = 5000; // 5 second timer
+  var timeout; 
 
-  $scope.count;
+  var playingAlert = false;
 
+  // Default to 5
+  $scope.count = 5; // 5 second timer
+
+  $scope.countDown = 5;
   $scope.radius;
 
   $scope.absement; 
@@ -30,22 +34,36 @@ angular.module('starter.controllers', [])
     canvas=document.getElementById('myCanvas'); 
     Accelerometer.setCanvas(canvas);
 
-    //Draw circle radar
-
-    // Initialize variables
-    $scope.count = 0;
+    load the alert sound
+    $cordovaNativeAudio
+    .preloadComplex('alert', 'audio/alert.mp3', 1, 1)
+    .then(function (msg) {
+      console.log(msg);
+    }, function (error) {
+      //alert(error);
+      alert('Ready for training?');
+    });
   });
 
+  function playAlert() {
+    $cordovaNativeAudio.loop('alert');
+  };
+  function stopAlert() {
+    $cordovaNativeAudio.stop('alert');
+  };
+
+
   //Start Watching method
-  $scope.startWatching = function() {     
+  $scope.startWatching = function(newCount) {    
+    Accelerometer.init(); 
     Accelerometer.startWatching();
 
-    // Reset timer
-    if($scope.count < 1) {
-      $scope.count = timeout/1000;
-    }
-
     // Initiate count down timer
+    $scope.count = newCount;
+    //$scope.$apply();
+    timeout = $scope.count * 1000;
+    console.log("newCount is: " + newCount);
+    console.log("timeout is: " + timeout);
     startTimer(timeout);
   };  
 
@@ -53,18 +71,21 @@ angular.module('starter.controllers', [])
   $scope.stopWatching = function() {  
     Accelerometer.stopWatching();
     stopCountDown();
-    console.log(Accelerometer.getRadiusArray());
-    $scope.absement = $scope.accelerometer.getAbsement();
+    //console.log(Accelerometer.getRadiusArray());
+    $scope.absement = $scope.measurementRound($scope.accelerometer.getAbsement(), 2);
 
     var score = {
       id: Chats.getLastId(),
       name: 'Pushup',
-      lastText: 'Score: ' + $scope.absement,
+      lastText: 'Score: ' + $scope.measurementRound($scope.absement, 2),
       face: ' '
     }
     Chats.add(score);
 
     console.log(Chats.all());
+
+    stopAlert();
+    playingAlert = false;
   };
 
   // For testing
@@ -72,7 +93,15 @@ angular.module('starter.controllers', [])
     $scope.measurements = newMeasurements;
   });
   $scope.$watch('accelerometer.getRadius()', function(newRadius) {
-    $scope.radius = newRadius;
+    $scope.radius = $scope.measurementRound(newRadius, 2);
+    if(newRadius > 16 && !playingAlert) {
+      playAlert();
+      playingAlert = true;
+    } 
+    if(newRadius < 16 && playingAlert) {
+      stopAlert();
+      playingAlert = false;
+    }
   });
   $scope.$watch('accelerometer.getCurrentXWithRespectToOrigin()', function(newX) {
     $scope.currentXWithRespectToOrigin = newX;
@@ -81,8 +110,8 @@ angular.module('starter.controllers', [])
     $scope.currentYWithRespectToOrigin = newY;
   });
 
-  $scope.measurementRound = function(measurement) {
-    return precise_round(measurement, 5);
+  $scope.measurementRound = function(measurement, decimals) {
+    return precise_round(measurement, decimals);
   }
 
   // Put in accelerometer service
@@ -95,7 +124,9 @@ angular.module('starter.controllers', [])
   function startTimer(timeout) {
     // Start counting down
     $scope.timer = $interval(function() { 
+      //console.log("Count is now: " + $scope.count);
       $scope.count--;
+      // $scope.$apply();
     }, 1000);
 
     // Stop watching after timeout interval
@@ -110,8 +141,11 @@ angular.module('starter.controllers', [])
       $interval.cancel($scope.timer);
     }
   }
-})
 
+  // $scope.set = function() {
+  //   $scope.count = 8;
+  // }
+})
 
 
 
@@ -139,8 +173,27 @@ angular.module('starter.controllers', [])
   $scope.chat = Chats.get($stateParams.chatId);
 })
 
-.controller('AccountCtrl', function($scope) {
+
+
+
+.controller('AccountCtrl', function($scope, $cordovaNativeAudio) {
   $scope.settings = {
     enableFriends: true
   };
+
+  // // load the alert sound
+  //   $cordovaNativeAudio
+  //   .preloadComplex('alert', 'audio/alert.mp3', 1, 1)
+  //   .then(function (msg) {
+  //     console.log(msg);
+  //   }, function (error) {
+  //     alert(error);
+  //   });
+
+  // $scope.playAlert = function() {
+  //   $cordovaNativeAudio.loop('alert');
+  // };
+  // $scope.stopAlert = function() {
+  //   $cordovaNativeAudio.stop('alert');
+  // };
 });

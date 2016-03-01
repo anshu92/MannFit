@@ -3,6 +3,7 @@ angular.module('starter.services', [])
 .factory('Chats', function() {
   // Might use a resource here that returns a JSON array
 
+  var prScore = 999999;
   // Some fake testing data
   var chats = [{
     id: 0,
@@ -27,7 +28,7 @@ angular.module('starter.services', [])
   }, {
     id: 4,
     name: 'Plank',
-    lastText: 'Score: 1003.44',
+    lastText: 'Score: 187.44',
     face: 'img/mike.png',
     pr: true
   }];
@@ -52,6 +53,12 @@ angular.module('starter.services', [])
     },
     add: function (chat) {
       chats.push(chat);
+    },
+    getPr: function() {
+      return prScore;
+    },
+    setPr: function(newPr) {
+      this.prScore = newPr;
     }
   };
 });

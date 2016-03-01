@@ -50,7 +50,7 @@ angular.module('starter.services-accelerometer', [])
 	// Draw radar
     drawRadar(options.xOrigin, options.yOrigin, options.radarRadius);
     // Draw center aim
-    drawRadar(options.xOrigin, options.yOrigin, 16);
+    drawCenter(options.xOrigin, options.yOrigin, 16);
   }
 
   //Start Watching method
@@ -93,7 +93,7 @@ angular.module('starter.services-accelerometer', [])
         // Draw radar
         drawRadar(options.xOrigin, options.yOrigin, options.radarRadius);
         // Draw center aim
-        drawRadar(options.xOrigin, options.yOrigin, 16);
+        drawCenter(options.xOrigin, options.yOrigin, 16);
         drawCircle(currentX, currentY);   
         radius = Math.sqrt(parseFloat(currentXWithRespectToOrigin)*parseFloat(currentXWithRespectToOrigin)
          + parseFloat(currentYWithRespectToOrigin)*parseFloat(currentYWithRespectToOrigin));  
@@ -108,6 +108,29 @@ angular.module('starter.services-accelerometer', [])
     });     
   };  
 
+  this.init = function() {
+  	currentXWithRespectToOrigin = null;
+	currentYWithRespectToOrigin = null;
+
+	// Current measurements
+	measurements = {
+      x : null,
+      y : null,
+      z : null,
+      timestamp : null
+	};
+	   
+    // Previous measurements    
+    previousMeasurements = {
+      x : options.xOrigin,
+      y : options.yOrigin,
+      z : null,
+      timestamp : null
+    };
+
+    radius = 0;
+    radiusArray = [];
+  }
   // Stop watching method
   this.stopWatching = function() {  
     watch.clearWatch();
@@ -131,7 +154,7 @@ angular.module('starter.services-accelerometer', [])
   }
   this.getAbsement = function () {
   	absement = 0 ;
-  	console.log(radiusArray);
+  	//console.log(radiusArray);
   	for(var i=0; i<radiusArray.length; i++) {
     	absement+=radiusArray[i];
    	}
@@ -141,6 +164,7 @@ angular.module('starter.services-accelerometer', [])
   function drawCircle(x, y) {
     ctx.beginPath();
     ctx.arc(x,y,8,0,TAU);
+    ctx.fillStyle = '#fff';
     ctx.fill();
     ctx.closePath();
   };
@@ -148,9 +172,18 @@ angular.module('starter.services-accelerometer', [])
   function drawRadar(x, y, r) {
     ctx.beginPath();
     ctx.arc(x,y,r,0,TAU);
-	ctx.stroke();
+    ctx.fillStyle = '#387ef5';
+	ctx.fill();
     ctx.closePath();
   };
+
+  function drawCenter(x,y,r) {
+  	ctx.beginPath();
+    ctx.arc(x,y,r,0,TAU);
+    ctx.fillStyle = '#4F8EF7';
+	ctx.fill();
+    ctx.closePath();
+  }
 
   return this;
 });
