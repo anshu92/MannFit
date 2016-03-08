@@ -4,6 +4,7 @@ angular.module('starter.services-accelerometer', [])
   // Setup circle params for drawing
   var canvas, ctx, watch, w, h;
   var TAU = Math.PI * 2;
+  var G = 9.82;
 
   // watch Acceleration options
   var options = { 
@@ -17,7 +18,17 @@ angular.module('starter.services-accelerometer', [])
       xLower: 2,
       yLower: 2
   };
-   
+
+  var current = {
+    x : null,
+    y : null,
+    z : null
+  }
+  
+  // The qoutient between radar radius boundry and the max possible radius (gravity) measured by accelerometer.
+  // Used to propotion the measured radius to the drawn radar field
+  var boundOverG = 150/G;
+
   var radius = null;
 
   var absement = null;
@@ -72,39 +83,39 @@ angular.module('starter.services-accelerometer', [])
         measurements.timestamp = result.timestamp;    
 
         // Calculate new coordinates 
-        var currentX = previousMeasurements.x + (-1)*result.x;
-        if(currentX > options.xUpper) {
-        	currentX = options.xUpper;
-        } else if(currentX < options.xLower) {
-        	currentX = options.xLower;
+        current.x = options.xOrigin + (-1) * result.x * boundOverG;
+        if(current.x > options.xUpper) {
+        	current.x = options.xUpper;
+        } else if(current.x < options.xLower) {
+        	current.x = options.xLower;
         }
-        var currentY = previousMeasurements.y + result.y;
-        if(currentY > options.yUpper) {
-        	currentY = options.yUpper;
-        } else if(currentY < options.yLower) {
-        	currentY = options.yLower;
+        current.y = options.yOrigin + result.y * boundOverG;
+        if(current.y > options.yUpper) {
+        	current.y = options.yUpper;
+        } else if(current.y < options.yLower) {
+        	current.y = options.yLower;
         }
-        
-        var currentZ = previousMeasurements.z + result.z;
+        current.z = options.zOrigin + result.z * boundOverG;
 
-        currentXWithRespectToOrigin = currentX - options.xOrigin;
-        currentYWithRespectToOrigin = currentY - options.yOrigin;
+        // Set previous data  
+        previousMeasurements.x = measurements.x;
+        previousMeasurements.y = measurements.y;
+        previousMeasurements.z = measurements.z;
+        previousMeasurements.timestamp = result.timestamp;  
 
         // Draw radar
         drawRadar(options.xOrigin, options.yOrigin, options.radarRadius);
         // Draw center aim
         drawCenter(options.xOrigin, options.yOrigin, 16);
-        drawCircle(currentX, currentY);   
+        // Draw movement dot
+        drawCircle(current.x, current.y);
+
+        // Calculate radius
+        currentXWithRespectToOrigin = current.x - options.xOrigin;
+        currentYWithRespectToOrigin = current.y - options.yOrigin;
         radius = Math.sqrt(parseFloat(currentXWithRespectToOrigin)*parseFloat(currentXWithRespectToOrigin)
          + parseFloat(currentYWithRespectToOrigin)*parseFloat(currentYWithRespectToOrigin));  
-
         radiusArray.push(radius);
-
-        // Set previous data  
-        previousMeasurements.x = currentX;
-        previousMeasurements.y = currentY;
-        previousMeasurements.z = currentZ;
-        previousMeasurements.timestamp = result.timestamp;          
     });     
   };  
 
@@ -183,6 +194,11 @@ angular.module('starter.services-accelerometer', [])
     ctx.fillStyle = '#4F8EF7';
 	ctx.fill();
     ctx.closePath();
+  }
+
+  function precise_round(num, decimals) {
+    var t=Math.pow(10, decimals);   
+    return (Math.round((num * t) + (decimals>0?1:0)*(Math.sign(num) * (10 / Math.pow(100, decimals)))) / t).toFixed(decimals);
   }
 
   return this;

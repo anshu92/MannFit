@@ -2,8 +2,13 @@
   <ion-content>
     <ion-list>
     	<ion-toggle  ng-model="settings.enableFriends">
-	        Turn on music
+	        Sound alert
 	    </ion-toggle>
+	    <div class="item range">
+		  <i class="icon ion-ios-speedometer-outline"></i>
+		  <input type="range" name="sensitivity">
+		  <i class="icon ion-ios-speedometer"></i>
+		</div>
     </ion-list>
 
    <!--  <p><button ng-click="playAlert()" class="button icon-left ion-play button-energized">Play Snare</button></p>
