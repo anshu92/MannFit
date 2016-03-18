@@ -5,33 +5,7 @@ angular.module('starter.services', [])
 
   var prScore = 999999;
   // Some fake testing data
-  var chats = [{
-    id: 0,
-    name: 'Pushup',
-    lastText: 'Score: 3020.32',
-    face: 'img/ben.png',
-  }, {
-    id: 1,
-    name: 'Pushup',
-    lastText: 'Score: 4080.22',
-    face: 'img/max.png'
-  }, {
-    id: 2,
-    name: 'Plank',
-    lastText: 'Score: 5019.55',
-    face: 'img/adam.jpg'
-  }, {
-    id: 3,
-    name: 'Squat',
-    lastText: 'Score: 2004.37',
-    face: 'img/perry.png'
-  }, {
-    id: 4,
-    name: 'Plank',
-    lastText: 'Score: 187.44',
-    face: 'img/mike.png',
-    pr: true
-  }];
+  var chats = [];
 
   return {
     all: function() {

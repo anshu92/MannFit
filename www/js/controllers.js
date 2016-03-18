@@ -1,11 +1,15 @@
 angular.module('starter.controllers', [])
 
-.controller('DashCtrl', function($scope, $cordovaDeviceMotion, $ionicPlatform, $interval, $timeout, Accelerometer, Chats, $cordovaNativeAudio) {
+.controller('DashCtrl', function($scope, $cordovaDeviceMotion, $ionicLoading, $ionicPlatform, $interval, $timeout, Accelerometer, Chats) {
   var canvas
   var timeout; 
 
   var playingAlert = false;
 
+  var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  var source;
+
+  $scope.playbackRate = 1;
   // Default to 5
   $scope.count = 5; // 5 second timer
 
@@ -34,37 +38,28 @@ angular.module('starter.controllers', [])
     canvas=document.getElementById('myCanvas'); 
     Accelerometer.setCanvas(canvas);
 
-    load the alert sound
-    $cordovaNativeAudio
-    .preloadComplex('alert', 'audio/alert.mp3', 1, 1)
-    .then(function (msg) {
-      console.log(msg);
-    }, function (error) {
-      //alert(error);
-      alert('Ready for training?');
-    });
+    getData();
+    //Initialize without playing
+    source.start(0);
+    changeRate(0);
   });
-
-  function playAlert() {
-    $cordovaNativeAudio.loop('alert');
-  };
-  function stopAlert() {
-    $cordovaNativeAudio.stop('alert');
-  };
-
 
   //Start Watching method
   $scope.startWatching = function(newCount) {    
     Accelerometer.init(); 
     Accelerometer.startWatching();
 
-    // Initiate count down timer
+    // Initiate variables
     $scope.count = newCount;
-    //$scope.$apply();
+    $scope.absement = 0;
+
     timeout = $scope.count * 1000;
     console.log("newCount is: " + newCount);
     console.log("timeout is: " + timeout);
     startTimer(timeout);
+
+    // Start playing
+    changeRate(1);
   };  
 
   // Stop watching method
@@ -78,14 +73,15 @@ angular.module('starter.controllers', [])
       id: Chats.getLastId(),
       name: 'Pushup',
       lastText: 'Score: ' + $scope.measurementRound($scope.absement, 2),
-      face: ' '
+      face: ' ',
+      radiusArray: Accelerometer.getRadiusArray(),
+      xAxisArray:'',
+      yAxisArray:''
     }
     Chats.add(score);
 
-    console.log(Chats.all());
-
-    stopAlert();
-    playingAlert = false;
+    // Stop music
+    changeRate(0);
   };
 
   // For testing
@@ -94,13 +90,12 @@ angular.module('starter.controllers', [])
   });
   $scope.$watch('accelerometer.getRadius()', function(newRadius) {
     $scope.radius = $scope.measurementRound(newRadius, 2);
-    if(newRadius > 16 && !playingAlert) {
-      playAlert();
-      playingAlert = true;
-    } 
-    if(newRadius < 16 && playingAlert) {
-      stopAlert();
-      playingAlert = false;
+
+    // Change music pitch
+    var rate = 1 - $scope.radius/300;
+    console.log("got the radius");
+    if(source.playbackRate.value !=0) {
+      changeRate(rate);
     }
   });
   $scope.$watch('accelerometer.getCurrentXWithRespectToOrigin()', function(newX) {
@@ -142,9 +137,42 @@ angular.module('starter.controllers', [])
     }
   }
 
-  // $scope.set = function() {
-  //   $scope.count = 8;
-  // }
+  // Get music data
+  function getData() {
+    $ionicLoading.show({
+      template: "Loading..."
+    });
+
+    source = audioCtx.createBufferSource();
+    var request = new XMLHttpRequest();
+
+    request.open('GET', 'audio/demo.mp3', true);
+
+    request.responseType = 'arraybuffer';
+
+    console.log(request);
+
+    request.onload = function() {
+      var audioData = request.response;
+
+      audioCtx.decodeAudioData(audioData, function(buffer) {
+        source.buffer = buffer;
+
+        source.connect(audioCtx.destination);
+        source.loop = true;
+        $ionicLoading.hide();
+      },
+
+      function(e){"Error with decoding audio data" + e.err});
+
+    }
+
+    request.send();
+  }
+
+  function changeRate(rate) {
+    source.playbackRate.value = rate;
+  }
 })
 
 
@@ -170,7 +198,55 @@ angular.module('starter.controllers', [])
 
 
 .controller('ChatDetailCtrl', function($scope, $stateParams, Chats) {
-  $scope.chat = Chats.get($stateParams.chatId);
+  var workoutData = Chats.get($stateParams.chatId);
+
+  var seconds = 8; // this is based on frequency of 50ms, should be whole number
+  var scoreDataPerSecond = [0];
+
+  console.log(workoutData);
+  console.log("Seconds: " + seconds);
+  var workoutData = [];
+  for(var i=0;i<160;i++) {
+    workoutData.push(0);
+  }
+  // Populate the data from radius array
+  var scoreSum = 0;
+  for(var i=0;i<workoutData.length;i++) {
+    scoreSum = scoreSum + workoutData[i];
+    if((i+1)%20 == 0) {
+      // At every 20ms
+      var average = scoreSum / 20;
+      scoreDataPerSecond.push(average);
+      scoreSum = 0;
+      // console.log(i);
+      // console.log(average);
+    }
+  }
+
+  console.log(scoreDataPerSecond);
+
+  // Populate xlabel with the number of seconds
+  var myLabel = [];
+  for(var i=0;i<seconds;i++) {
+    myLabel.push(i+1 + 's');
+  }
+  console.log(myLabel);
+
+  $scope.lineChartData = {
+    labels: myLabel,
+    datasets: [
+      {
+        label: "My Second dataset",
+        fillColor: "rgba(151,187,205,0.2)",
+        strokeColor: "rgba(151,187,205,1)",
+        pointColor: "rgba(151,187,205,1)",
+        pointStrokeColor: "#fff",
+        pointHighlightFill: "#fff",
+        pointHighlightStroke: "rgba(151,187,205,1)",
+        data: scoreDataPerSecond
+      }
+    ]
+  };
 })
 
 
@@ -181,19 +257,5 @@ angular.module('starter.controllers', [])
     enableFriends: true
   };
 
-  // // load the alert sound
-  //   $cordovaNativeAudio
-  //   .preloadComplex('alert', 'audio/alert.mp3', 1, 1)
-  //   .then(function (msg) {
-  //     console.log(msg);
-  //   }, function (error) {
-  //     alert(error);
-  //   });
-
-  // $scope.playAlert = function() {
-  //   $cordovaNativeAudio.loop('alert');
-  // };
-  // $scope.stopAlert = function() {
-  //   $cordovaNativeAudio.stop('alert');
-  // };
+  $scope.sensitivity
 });
