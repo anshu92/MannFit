@@ -198,45 +198,65 @@ angular.module('starter.controllers', [])
 
 
 .controller('ChatDetailCtrl', function($scope, $stateParams, Chats) {
-  var workoutData = Chats.get($stateParams.chatId);
+  var workout = Chats.get($stateParams.chatId);
+  var workoutData = workout.radiusArray;
 
-  var seconds = 8; // this is based on frequency of 50ms, should be whole number
+  var seconds = workoutData.length/20; // this is based on frequency of 50ms, should be whole number
   var scoreDataPerSecond = [0];
+  var asbementData = [0];
 
   console.log(workoutData);
   console.log("Seconds: " + seconds);
-  var workoutData = [];
-  for(var i=0;i<160;i++) {
-    workoutData.push(0);
-  }
+
   // Populate the data from radius array
   var scoreSum = 0;
+  var absement = 0;
   for(var i=0;i<workoutData.length;i++) {
     scoreSum = scoreSum + workoutData[i];
+    absement = absement + workoutData[i];;
     if((i+1)%20 == 0) {
+
       // At every 20ms
       var average = scoreSum / 20;
       scoreDataPerSecond.push(average);
       scoreSum = 0;
+      // Push absement to array
+      asbementData.push(absement);
       // console.log(i);
       // console.log(average);
     }
   }
-
-  console.log(scoreDataPerSecond);
+  console.log("absement: " + asbementData);
+  console.log("displacement: " + scoreDataPerSecond);
 
   // Populate xlabel with the number of seconds
   var myLabel = [];
   for(var i=0;i<seconds;i++) {
     myLabel.push(i+1 + 's');
   }
-  console.log(myLabel);
+  console.log("labels: " +  myLabel);
 
-  $scope.lineChartData = {
+  $scope.absementChartData = {
     labels: myLabel,
     datasets: [
       {
-        label: "My Second dataset",
+        label: "Absement",
+        fillColor: "rgba(220,220,220,0.2)",
+        strokeColor: "rgba(220,220,220,1)",
+        pointColor: "rgba(220,220,220,1)",
+        pointStrokeColor: "#fff",
+        pointHighlightFill: "#fff",
+        pointHighlightStroke: "rgba(220,220,220,1)",
+        data: asbementData
+      }
+    ]
+  };
+
+  $scope.displacementChartData = {
+    labels: myLabel,
+    datasets: [
+      {
+        label: "Displacement",
         fillColor: "rgba(151,187,205,0.2)",
         strokeColor: "rgba(151,187,205,1)",
         pointColor: "rgba(151,187,205,1)",
@@ -246,6 +266,9 @@ angular.module('starter.controllers', [])
         data: scoreDataPerSecond
       }
     ]
+  };
+  
+  $scope.options = {
   };
 })
 
