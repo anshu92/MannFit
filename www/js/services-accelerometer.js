@@ -8,7 +8,7 @@ angular.module('starter.services-accelerometer', [])
 
   // watch Acceleration options
   var options = { 
-      frequency: 50, // Measure every 50ms
+      frequency: 20, // Measure every 50ms
       deviation : 25,  // We'll use deviation to determine the shake event, best values in the range between 25 and 30
       xOrigin: 150,
       yOrigin: 150,
@@ -170,6 +170,9 @@ angular.module('starter.services-accelerometer', [])
     	absement+=radiusArray[i];
    	}
    	return absement;
+  }
+  this.getOptions = function () {
+    return options;
   }
 
   function drawCircle(x, y) {

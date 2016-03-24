@@ -197,42 +197,59 @@ angular.module('starter.controllers', [])
 
 
 
-.controller('ChatDetailCtrl', function($scope, $stateParams, Chats) {
+.controller('ChatDetailCtrl', function($scope, $stateParams, Chats, Accelerometer) {
+  var frequency = 1000/Accelerometer.getOptions().frequency;
+  console.log(frequency);
   var workout = Chats.get($stateParams.chatId);
   var workoutData = workout.radiusArray;
 
-  var seconds = workoutData.length/20; // this is based on frequency of 50ms, should be whole number
-  var scoreDataPerSecond = [0];
+  var seconds = workoutData.length/frequency; // this is based on frequency, should be whole number
+  console.log("workoutdata length: " + workoutData.length);
+
+  // Initialize data arrays
+  var displacementData = [0];
   var asbementData = [0];
+  var velocityData = [];
 
   console.log(workoutData);
   console.log("Seconds: " + seconds);
 
   // Populate the data from radius array
-  var scoreSum = 0;
+  var displacement = 0;
+  var previousDisplacement = 0;
   var absement = 0;
+  var velocity = 0;
   for(var i=0;i<workoutData.length;i++) {
-    scoreSum = scoreSum + workoutData[i];
+    displacement = displacement + workoutData[i];
     absement = absement + workoutData[i];;
-    if((i+1)%20 == 0) {
+    if((i+1)%frequency == 0) {
 
       // At every 20ms
-      var average = scoreSum / 20;
-      scoreDataPerSecond.push(average);
-      scoreSum = 0;
+      var average = displacement / frequency;
+      displacementData.push(average);
+      displacement = 0;
       // Push absement to array
       asbementData.push(absement);
+
+      velocity = (average - previousDisplacement)/1; //per second
+      velocityData.push(velocity);
+      previousDisplacement = average;
       // console.log(i);
       // console.log(average);
     }
   }
   console.log("absement: " + asbementData);
-  console.log("displacement: " + scoreDataPerSecond);
+  console.log("displacement: " + displacementData);
 
   // Populate xlabel with the number of seconds
   var myLabel = [];
   for(var i=0;i<seconds;i++) {
-    myLabel.push(i+1 + 's');
+    myLabel.push(i + 's');
+  }
+
+  var velocityLabel = [];
+  for(var i=0;i<seconds-1;i++) {
+    velocityLabel.push(i + 's');
   }
   console.log("labels: " +  myLabel);
 
@@ -263,12 +280,32 @@ angular.module('starter.controllers', [])
         pointStrokeColor: "#fff",
         pointHighlightFill: "#fff",
         pointHighlightStroke: "rgba(151,187,205,1)",
-        data: scoreDataPerSecond
+        data: displacementData
       }
     ]
   };
-  
+
+  $scope.velocityChartData = {
+    labels: velocityLabel,
+    datasets: [
+      {
+        label: "Displacement",
+        fillColor: "rgba(255,0,0,0.2)",
+        strokeColor: "rgba(255,0,0,1)",
+        pointColor: "rgba(255,0,0,1)",
+        pointStrokeColor: "#fff",
+        pointHighlightFill: "#fff",
+        pointHighlightStroke: "rgba(255,0,0,1)",
+        data: velocityData
+      }
+    ]
+  };
+
   $scope.options = {
+    scaleGridLineWidth : 0.5,
+    bezierCurve : false,
+    pointDot : false,
+    datasetStrokeWidth : 1
   };
 })
 
