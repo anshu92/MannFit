@@ -34,6 +34,16 @@ angular.module('starter.controllers', [])
       timestamp : null
   };
 
+  // Chart data
+  var displacementData;
+  var myLabel;
+
+  $scope.addDisplacement = function(displacement) {
+    displacementData.push(displacement);
+    myLabel.push('');
+  };
+
+
   $ionicPlatform.ready(function() {
     canvas=document.getElementById('myCanvas'); 
     Accelerometer.setCanvas(canvas);
@@ -42,6 +52,8 @@ angular.module('starter.controllers', [])
     //Initialize without playing
     source.start(0);
     changeRate(0);
+
+    initChart();
   });
 
   //Start Watching method
@@ -54,9 +66,12 @@ angular.module('starter.controllers', [])
     $scope.absement = 0;
 
     timeout = $scope.count * 1000;
-    console.log("newCount is: " + newCount);
-    console.log("timeout is: " + timeout);
+    // console.log("newCount is: " + newCount);
+    // console.log("timeout is: " + timeout);
     startTimer(timeout);
+
+    // Empty chart data
+    initChart();
 
     // Start playing
     changeRate(1);
@@ -93,10 +108,11 @@ angular.module('starter.controllers', [])
 
     // Change music pitch
     var rate = 1 - $scope.radius/300;
-    console.log("got the radius");
     if(source.playbackRate.value !=0) {
       changeRate(rate);
     }
+    // add to live chart
+    $scope.addDisplacement($scope.radius);
   });
   $scope.$watch('accelerometer.getCurrentXWithRespectToOrigin()', function(newX) {
     $scope.currentXWithRespectToOrigin = newX;
@@ -173,6 +189,36 @@ angular.module('starter.controllers', [])
   function changeRate(rate) {
     source.playbackRate.value = rate;
   }
+
+  function initChart() {
+     // Chart data
+    displacementData = [];
+    myLabel = [];
+    $scope.displacementChartData = {
+      labels: myLabel,
+      datasets: [
+        {
+          label: "Displacement",
+          fillColor: "rgba(151,187,205,0.2)",
+          strokeColor: "rgba(151,187,205,1)",
+          pointColor: "rgba(151,187,205,1)",
+          pointStrokeColor: "#fff",
+          pointHighlightFill: "#fff",
+          pointHighlightStroke: "rgba(151,187,205,1)",
+          data: displacementData
+        }
+      ]
+    };
+    $scope.options = {
+      scaleGridLineWidth : 0.5,
+      bezierCurve : false,
+      pointDot : false,
+      datasetStrokeWidth : 1,
+      scaleShowLabels : true,
+      animation: false,
+      showTooltips: false
+    };
+  }
 })
 
 
@@ -197,61 +243,71 @@ angular.module('starter.controllers', [])
 
 
 
-.controller('ChatDetailCtrl', function($scope, $stateParams, Chats, Accelerometer) {
+.controller('ChatDetailCtrl', function($scope, $stateParams, $ionicLoading, Chats, Accelerometer) {
   var frequency = 1000/Accelerometer.getOptions().frequency;
-  console.log(frequency);
+  frequency = 1;
+  //console.log(frequency);
   var workout = Chats.get($stateParams.chatId);
   var workoutData = workout.radiusArray;
 
   var seconds = workoutData.length/frequency; // this is based on frequency, should be whole number
-  console.log("workoutdata length: " + workoutData.length);
+  // console.log("workoutdata length: " + workoutData.length);
 
   // Initialize data arrays
   var displacementData = [0];
   var asbementData = [0];
   var velocityData = [];
-
-  console.log(workoutData);
-  console.log("Seconds: " + seconds);
-
-  // Populate the data from radius array
-  var displacement = 0;
-  var previousDisplacement = 0;
-  var absement = 0;
-  var velocity = 0;
-  for(var i=0;i<workoutData.length;i++) {
-    displacement = displacement + workoutData[i];
-    absement = absement + workoutData[i];;
-    if((i+1)%frequency == 0) {
-
-      // At every 20ms
-      var average = displacement / frequency;
-      displacementData.push(average);
-      displacement = 0;
-      // Push absement to array
-      asbementData.push(absement);
-
-      velocity = (average - previousDisplacement)/1; //per second
-      velocityData.push(velocity);
-      previousDisplacement = average;
-      // console.log(i);
-      // console.log(average);
-    }
-  }
-  console.log("absement: " + asbementData);
-  console.log("displacement: " + displacementData);
-
-  // Populate xlabel with the number of seconds
   var myLabel = [];
-  for(var i=0;i<seconds;i++) {
-    myLabel.push(i + 's');
-  }
-
   var velocityLabel = [];
-  for(var i=0;i<seconds-1;i++) {
-    velocityLabel.push(i + 's');
-  }
-  console.log("labels: " +  myLabel);
+
+  // console.log(workoutData);
+  // console.log("Seconds: " + seconds);
+
+  $scope.init = function() {
+    $ionicLoading.show({
+      template: "Loading..."
+    });
+    // Populate the data from radius array
+    var displacement = 0;
+    var previousDisplacement = 0;
+    var absement = 0;
+    var velocity = 0;
+    for(var i=0;i<workoutData.length;i++) {
+      displacement = displacement + workoutData[i];
+      absement = absement + workoutData[i];;
+      if((i+1)%frequency == 0) {
+
+        // At every 20ms
+        var average = displacement / frequency;
+        displacementData.push(average);
+        displacement = 0;
+        // Push absement to array
+        asbementData.push(absement);
+
+        velocity = Math.abs(average - previousDisplacement)/1; //per second
+        velocityData.push(velocity);
+        previousDisplacement = average;
+        // console.log(i);
+        // console.log(average);
+      }
+    }
+    // console.log("absement: " + asbementData);
+    // console.log("displacement: " + displacementData);
+
+    // Populate xlabel with the number of seconds
+    for(var i=0;i<seconds;i++) {
+      //myLabel.push(i + 's');
+      myLabel.push('');
+    }
+
+    for(var i=0;i<seconds;i++) {
+      //velocityLabel.push('i + 's'');
+      velocityLabel.push('');
+    }
+    //console.log("labels: " +  myLabel);    
+    $ionicLoading.hide();
+
+  };
 
   $scope.absementChartData = {
     labels: myLabel,
@@ -305,8 +361,25 @@ angular.module('starter.controllers', [])
     scaleGridLineWidth : 0.5,
     bezierCurve : false,
     pointDot : false,
-    datasetStrokeWidth : 1
+    datasetStrokeWidth : 1,
+    scaleShowLabels : true,
+    animation: false,
+    showTooltips: false
   };
+
+  $scope.barOptions = {
+    barShowStroke: false,
+    scaleShowLabels : true,
+    animation: false,
+    showTooltips: false
+    //scaleBeginAtZero : true,
+    //scaleOverride: true,
+    //scaleSteps: 150,
+    //scaleStepWidth: 2,
+    //scaleStartValue: 0,
+    //responsive: true,
+    //barBeginAtOrigin: true,
+  }
 })
 
 
